@@ -10,6 +10,32 @@ import { redis } from '../../main';
 import NineAnime from '@consumet/extensions/dist/providers/anime/9anime';
 import Gogoanime from '@consumet/extensions/dist/providers/anime/gogoanime';
 
+const generateAnilistMeta = (provider: string | undefined = undefined): Anilist => {
+  if (typeof provider !== 'undefined') {
+    let possibleProvider = PROVIDERS_LIST.ANIME.find(
+      (p) => p.name.toLowerCase() === provider.toLocaleLowerCase(),
+    );
+
+    if (possibleProvider instanceof NineAnime) {
+      possibleProvider = new ANIME.NineAnime(
+        process.env?.NINE_ANIME_HELPER_URL,
+        {
+          url: process.env?.NINE_ANIME_PROXY as string,
+        },
+        process.env?.NINE_ANIME_HELPER_KEY as string,
+      );
+    }
+
+    return new META.Anilist(possibleProvider, {
+      url: process.env.PROXY as string | string[],
+    });
+  } else {
+    // default provider is gogoanime
+    return new Anilist(new Gogoanime('anitaku.pe'), {
+      url: process.env.PROXY as string | string[],
+    });
+  }
+};
 const routes = async (fastify: FastifyInstance, options: RegisterOptions) => {
   fastify.get('/', (_, rp) => {
     rp.status(200).send({
@@ -343,33 +369,6 @@ const routes = async (fastify: FastifyInstance, options: RegisterOptions) => {
       }
     },
   );
-};
-
-const generateAnilistMeta = (provider: string | undefined = undefined): Anilist => {
-  if (typeof provider !== 'undefined') {
-    let possibleProvider = PROVIDERS_LIST.ANIME.find(
-      (p) => p.name.toLowerCase() === provider.toLocaleLowerCase(),
-    );
-
-    if (possibleProvider instanceof NineAnime) {
-      possibleProvider = new ANIME.NineAnime(
-        process.env?.NINE_ANIME_HELPER_URL,
-        {
-          url: process.env?.NINE_ANIME_PROXY as string,
-        },
-        process.env?.NINE_ANIME_HELPER_KEY as string,
-      );
-    }
-
-    return new META.Anilist(possibleProvider, {
-      url: process.env.PROXY as string | string[],
-    });
-  } else {
-    // default provider is gogoanime
-    return new Anilist(new Gogoanime(), {
-      url: process.env.PROXY as string | string[],
-    });
-  }
 };
 
 export default routes;

@@ -26,12 +26,17 @@ const generateAnilistMeta = (provider: string | undefined = undefined): Anilist 
       );
     }
 
-    return new META.Anilist(possibleProvider, {
-      url: process.env.PROXY as string | string[],
-    });
+    return new META.Anilist(
+      possibleProvider instanceof Gogoanime
+        ? new Gogoanime('cors-proxy.sohom829.xyz/https://anitaku.pe')
+        : possibleProvider,
+      {
+        url: process.env.PROXY as string | string[],
+      },
+    );
   } else {
     // default provider is gogoanime
-    return new Anilist(new Gogoanime('anitaku.pe'), {
+    return new Anilist(new Gogoanime('cors-proxy.sohom829.xyz/https://anitaku.pe'), {
       url: process.env.PROXY as string | string[],
     });
   }
@@ -159,7 +164,7 @@ const routes = async (fastify: FastifyInstance, options: RegisterOptions) => {
       const weekEnd = (request.query as { weekEnd: number | string }).weekEnd;
       const notYetAired = (request.query as { notYetAired: boolean }).notYetAired;
 
-       const anilist = generateAnilistMeta();
+      const anilist = generateAnilistMeta();
       const _weekStart = Math.ceil(Date.now() / 1000);
 
       const res = await anilist.fetchAiringSchedule(
